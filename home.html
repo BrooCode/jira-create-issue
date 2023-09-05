@@ -9,15 +9,14 @@
     <div class="container">
         <h1>Create a Jira Issue</h1>
         <form id="uploadForm">
-            <label for="file">Choose a file:</label>
-            <input type="file" id="file" name="file" required>
+            <label for="file">Choose a file (optional):</label>
+            <input type="file" id="file" name="file">
             <label for="summary">Summary:</label>
             <input type="text" id="summary" name="summary" required>
             <label for="description">Description:</label>
             <textarea id="description" name="description" rows="4" required></textarea>
             <label for="priority">Priority:</label>
             <select id="priority" name="priority">
-                <option value="High">Blocker</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
@@ -37,37 +36,42 @@
             const descriptionInput = document.getElementById('description');
             const priorityInput = document.getElementById('priority');
             
-            const file = fileInput.files[0];
-            const reader = new FileReader();
+            let fileData = '';
+            let fileExtension = '';
             
-            reader.onload = async (event) => {
-                const fileData = event.target.result.split(',')[1]; // Extract base64 data
-                const fileExtension = file.name.split('.').pop(); // Extract the file extension
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
                 
-                const data = {
-                    summary: summaryInput.value,
-                    description: descriptionInput.value,
-                    priority: priorityInput.value,
-                    file: fileData,
-                    ext: '.' + fileExtension
+                reader.onload = async (event) => {
+                    fileData = event.target.result.split(',')[1]; // Extract base64 data
+                    fileExtension = '.' + file.name.split('.').pop(); // Extract the file extension
                 };
                 
-                const response = await fetch('http://127.0.0.1:8000/demo', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                if (response.ok) {
-                    alert('Issue logged successfully!');
-                } else {
-                    alert('Error logging the issue.');
-                }
+                reader.readAsDataURL(file);
+            }
+            
+            const data = {
+                summary: summaryInput.value,
+                description: descriptionInput.value,
+                priority: priorityInput.value,
+                file: fileData,
+                ext: fileExtension
             };
             
-            reader.readAsDataURL(file); 
+            const response = await fetch('http://127.0.0.1:8000/demo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                alert('Issue logged successfully!');
+            } else {
+                alert('Error logging the issue.');
+            }
         });
     </script>
 </body>
