@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload and JSON POST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="container">
+        <h1>Create a Jira Issue</h1>
+        <form id="uploadForm">
+            <label for="file">Choose a file (optional):</label>
+            <input type="file" id="file" name="file">
+            <label for="summary">Summary:</label>
+            <input type="text" id="summary" name="summary" required>
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+            <label for="priority">Priority:</label>
+            <select id="priority" name="priority">
+                <option value="High">Blocker</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+            <button type="submit">Log the Issue</button>
+        </form>
+        
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const message = document.getElementById('message');
+        
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file');
+            const summaryInput = document.getElementById('summary');
+            const descriptionInput = document.getElementById('description');
+            const priorityInput = document.getElementById('priority');
+            
+            let fileData = '';
+            let fileExtension = '';
+            
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = async (event) => {
+                    fileData = event.target.result.split(',')[1]; // Extract base64 data
+                    fileExtension = '.' + file.name.split('.').pop(); // Extract the file extension
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            const data = {
+                summary: summaryInput.value,
+                description: descriptionInput.value,
+                priority: priorityInput.value,
+                file: fileData,
+                ext: fileExtension
+            };
+            
+            const response = await fetch('http://20.193.148.145:5050/jira_create_issue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                // Show the "Issue logged" message
+                message.style.display = 'block';
+            } else {
+                alert('Error logging the issue.');
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+<style>
+    /* Reset some default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    margin: 0 auto; /* Center the container horizontally */
+}
+
+h1 {
+    margin-top: 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    margin-bottom: 10px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        margin: 0 10px;
+    }
+}
+
+</style>
